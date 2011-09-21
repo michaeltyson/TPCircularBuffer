@@ -14,7 +14,6 @@ static inline int min(int a, int b) {
     return (a>b ? b : a);
 }
 
-
 inline void TPCircularBufferInit(TPCircularBufferRecord *record, int length) {
     record->head = record->tail = record->fillCount = 0;
     record->length = length;
@@ -49,17 +48,7 @@ inline void TPCircularBufferProduce(TPCircularBufferRecord *record, int amount) 
     OSAtomicAdd32Barrier(amount, &record->fillCount);
 }
 
-inline void TPCircularBufferConsume(TPCircularBufferRecord *record, int amount) {
-    record->tail = (record->tail + amount) % record->length;
-    OSAtomicAdd32Barrier(-amount, &record->fillCount);
-}
-
-inline void TPCircularBufferClear(TPCircularBufferRecord *record) {
-    record->tail = record->head;
-    record->fillCount = 0;
-}
-
-inline int TPCircularBufferCopy(TPCircularBufferRecord *record, void* dst, const void* src, int count, int len) {
+inline int TPCircularBufferProduceBytes(TPCircularBufferRecord *record, void* dst, const void* src, int count, int len) {
     int copied = 0;
     while ( count > 0 ) {
         int space = TPCircularBufferSpaceContiguous(record);
@@ -73,8 +62,18 @@ inline int TPCircularBufferCopy(TPCircularBufferRecord *record, void* dst, const
         
         src += bytesToCopy;
         count -= toCopy;
-        copied += bytesToCopy;
+        copied += bytesToCopy/len;
         TPCircularBufferProduce(record, toCopy);
     }
     return copied;
+}
+
+inline void TPCircularBufferConsume(TPCircularBufferRecord *record, int amount) {
+    record->tail = (record->tail + amount) % record->length;
+    OSAtomicAdd32Barrier(-amount, &record->fillCount);
+}
+
+inline void TPCircularBufferClear(TPCircularBufferRecord *record) {
+    record->tail = record->head;
+    record->fillCount = 0;
 }
