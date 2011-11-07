@@ -19,6 +19,8 @@ The routines under the heading "Reading" (in TPCircularBuffer.h) should only eve
 
 Other routines, except for TPCircularBufferInit and TPCircularBufferClear, can be accessed concurrently without issue.
 
+If used in a single-threaded context only, use the "SingleThread" variations of the produce and consume routines, which skip the overhead of the atomic operations.
+
 -----------------------------------------------------
 
 See more info at [atastypixel.com](http://atastypixel.com/blog/a-simple-fast-circular-buffer-implementation-for-audio-processing/)

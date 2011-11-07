@@ -8,7 +8,6 @@
 
 #include "TPCircularBuffer.h"
 #include <string.h>
-#include <libkern/OSAtomic.h>
 
 static inline int min(int a, int b) {
     return (a>b ? b : a);
@@ -48,6 +47,11 @@ inline void TPCircularBufferProduce(TPCircularBufferRecord *record, int amount) 
     OSAtomicAdd32Barrier(amount, &record->fillCount);
 }
 
+inline void TPCircularBufferProduceSingleThread(TPCircularBufferRecord *record, int amount) {
+    record->head = (record->head + amount) % record->length;
+    record->fillCount += amount;
+}
+
 inline int TPCircularBufferProduceBytes(TPCircularBufferRecord *record, void* dst, const void* src, int count, int len) {
     int copied = 0;
     while ( count > 0 ) {
@@ -71,6 +75,11 @@ inline int TPCircularBufferProduceBytes(TPCircularBufferRecord *record, void* ds
 inline void TPCircularBufferConsume(TPCircularBufferRecord *record, int amount) {
     record->tail = (record->tail + amount) % record->length;
     OSAtomicAdd32Barrier(-amount, &record->fillCount);
+}
+
+inline void TPCircularBufferConsumeSingleThread(TPCircularBufferRecord *record, int amount) {
+    record->tail = (record->tail + amount) % record->length;
+    record->fillCount -= amount;
 }
 
 inline void TPCircularBufferClear(TPCircularBufferRecord *record) {
