@@ -1,88 +1,120 @@
 //
 //  TPCircularBuffer.c
-//  Circular buffer implementation
+//  Circular/Ring buffer implementation
 //
-//  Created by Michael Tyson on 20/03/2011.
+//  Created by Michael Tyson on 10/12/2011.
 //  Copyright 2011 A Tasty Pixel. All rights reserved.
 //
+//  Redistribution and use in source and binary forms, with or without modification, are permitted
+//  freely. Credit is appreciated, but not required.
+//
+//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS 
+//  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY 
+//  AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
+//  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+//  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF 
+//  USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+//  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+//  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "TPCircularBuffer.h"
 #include <string.h>
+#include <mach/mach.h>
+#include <stdio.h>
+
+#define checkResult(result,operation) (_checkResult((result),(operation),strrchr(__FILE__, '/'),__LINE__))
+static inline bool _checkResult(kern_return_t result, const char *operation, const char* file, int line) {
+    if ( result != ERR_SUCCESS ) {
+        printf("%s:%d: %s: %s\n", file, line, operation, mach_error_string(result)); 
+        return false;
+    }
+    return true;
+}
 
 static inline int min(int a, int b) {
     return (a>b ? b : a);
 }
 
-inline void TPCircularBufferInit(TPCircularBufferRecord *record, int length) {
-    record->head = record->tail = record->fillCount = 0;
-    record->length = length;
-}
+bool TPCircularBufferInit(TPCircularBuffer *buffer, int length) {
+    
+    buffer->length = round_page(length);    // We need whole page sizes
 
-inline int TPCircularBufferFillCount(TPCircularBufferRecord *record) {
-    return record->fillCount;
-}
-
-inline int TPCircularBufferFillCountContiguous(TPCircularBufferRecord *record) {
-    return min(record->fillCount, record->length-record->tail);
-}
-
-inline int TPCircularBufferSpace(TPCircularBufferRecord *record) {
-    return record->length - record->fillCount;
-}
-
-inline int TPCircularBufferSpaceContiguous(TPCircularBufferRecord *record) {
-    return min(record->length-record->fillCount, record->length-record->head);
-}
-
-inline int TPCircularBufferHead(TPCircularBufferRecord *record) {
-    return record->head;
-}
-
-inline int TPCircularBufferTail(TPCircularBufferRecord *record) {
-    return record->tail;
-}
-
-inline void TPCircularBufferProduce(TPCircularBufferRecord *record, int amount) {
-    record->head = (record->head + amount) % record->length;
-    OSAtomicAdd32Barrier(amount, &record->fillCount);
-}
-
-inline void TPCircularBufferProduceSingleThread(TPCircularBufferRecord *record, int amount) {
-    record->head = (record->head + amount) % record->length;
-    record->fillCount += amount;
-}
-
-inline int TPCircularBufferProduceBytes(TPCircularBufferRecord *record, void* dst, const void* src, int count, int len) {
-    int copied = 0;
-    while ( count > 0 ) {
-        int space = TPCircularBufferSpaceContiguous(record);
-        if ( space == 0 ) {
-            return copied;
-        }
-        
-        int toCopy = min(count, space);
-        int bytesToCopy = toCopy * len;
-        memcpy(dst + (len*TPCircularBufferHead(record)), src, bytesToCopy);
-        
-        src += bytesToCopy;
-        count -= toCopy;
-        copied += bytesToCopy/len;
-        TPCircularBufferProduce(record, toCopy);
+    // Temporarily allocate twice the length, so we have the contiguous address space to
+    // support a second instance of the buffer directly after
+    vm_address_t bufferAddress;
+    if ( !checkResult(vm_allocate(mach_task_self(), &bufferAddress, buffer->length * 2, TRUE /* (don't use the current bufferAddress value) */),
+                      "Buffer allocation") ) return false;
+    
+    // Now replace the second half of the allocation with a virtual copy of the first half. Deallocate the second half...
+    if ( !checkResult(vm_deallocate(mach_task_self(), bufferAddress + buffer->length, buffer->length),
+                      "Buffer deallocation") ) return false;
+    
+    // Then create a memory entry that refers to the buffer
+    vm_size_t entry_length = buffer->length;
+    mach_port_t memoryEntry;
+    if ( !checkResult(mach_make_memory_entry(mach_task_self(), &entry_length, bufferAddress, VM_PROT_READ|VM_PROT_WRITE, &memoryEntry, 0),
+                      "Create memory entry") ) {
+        vm_deallocate(mach_task_self(), bufferAddress, buffer->length);
+        return false;
     }
+    
+    // And map the memory entry to the address space immediately after the buffer
+    vm_address_t virtualAddress = bufferAddress + buffer->length;
+    if ( !checkResult(vm_map(mach_task_self(), &virtualAddress, buffer->length, 0, FALSE, memoryEntry, 0, FALSE, VM_PROT_READ | VM_PROT_WRITE, VM_PROT_READ | VM_PROT_WRITE, VM_INHERIT_DEFAULT),
+                      "Map buffer memory") ) {
+        vm_deallocate(mach_task_self(), bufferAddress, buffer->length);
+        return false;
+    }
+    
+    if ( virtualAddress != bufferAddress+buffer->length ) {
+        printf("Couldn't map buffer memory to end of buffer\n");
+        vm_deallocate(mach_task_self(), virtualAddress, buffer->length);
+        vm_deallocate(mach_task_self(), bufferAddress, buffer->length);
+        return false;
+    }
+    
+    buffer->buffer = (void*)bufferAddress;
+    buffer->fillCount = 0;
+    buffer->head = buffer->tail = 0;
+    
+    return true;
+}
+
+void TPCircularBufferCleanup(TPCircularBuffer *buffer) {
+    vm_deallocate(mach_task_self(), (vm_address_t)buffer->buffer, buffer->length * 2);
+    memset(buffer, 0, sizeof(TPCircularBuffer));
+}
+
+void TPCircularBufferClear(TPCircularBuffer *buffer) {
+    buffer->head = buffer->tail = 0;
+    buffer->fillCount = 0;
+}
+
+inline void* TPCircularBufferTail(TPCircularBuffer *buffer, int32_t* availableBytes) {
+    *availableBytes = buffer->fillCount;
+    return (void*)((char*)buffer->buffer + buffer->tail);
+}
+
+inline void TPCircularBufferConsume(TPCircularBuffer *buffer, int32_t amount) {
+    buffer->tail = (buffer->tail + amount) % buffer->length;
+    OSAtomicAdd32(-amount, &buffer->fillCount);
+}
+
+inline void* TPCircularBufferHead(TPCircularBuffer *buffer, int32_t* availableBytes) {
+    *availableBytes = (buffer->length - buffer->fillCount);
+    return (void*)((char*)buffer->buffer + buffer->head);
+}
+
+inline void TPCircularBufferProduce(TPCircularBuffer *buffer, int amount) {
+    buffer->head = (buffer->head + amount) % buffer->length;
+    OSAtomicAdd32(amount, &buffer->fillCount);
+}
+
+int TPCircularBufferProduceBytes(TPCircularBuffer *buffer, const void* src, int32_t len) {
+    int32_t space;
+    void *ptr = TPCircularBufferHead(buffer, &space);
+    int copied = min(len, space);
+    memcpy(ptr, src, copied);
+    TPCircularBufferProduce(buffer, copied);
     return copied;
-}
-
-inline void TPCircularBufferConsume(TPCircularBufferRecord *record, int amount) {
-    record->tail = (record->tail + amount) % record->length;
-    OSAtomicAdd32Barrier(-amount, &record->fillCount);
-}
-
-inline void TPCircularBufferConsumeSingleThread(TPCircularBufferRecord *record, int amount) {
-    record->tail = (record->tail + amount) % record->length;
-    record->fillCount -= amount;
-}
-
-inline void TPCircularBufferClear(TPCircularBufferRecord *record) {
-    record->tail = record->head;
-    record->fillCount = 0;
 }
