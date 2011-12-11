@@ -3,6 +3,8 @@ A simple, fast circular buffer implementation for audio processing
 
 A simple C implementation for a circular (ring) buffer. Thread-safe with a single producer and a single consumer, using OSAtomic.h primitives, and avoids any need for buffer wrapping logic by using a virtual memory map technique to place a virtual copy of the buffer straight after the end of the real buffer.
 
+Distributed under the [MIT license](http://opensource.org/licenses/mit-license.php)
+
 Usage
 -----
 
