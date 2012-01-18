@@ -95,22 +95,22 @@ void TPCircularBufferClear(TPCircularBuffer *buffer) {
     buffer->fillCount = 0;
 }
 
-inline void* TPCircularBufferTail(TPCircularBuffer *buffer, int32_t* availableBytes) {
+void* TPCircularBufferTail(TPCircularBuffer *buffer, int32_t* availableBytes) {
     *availableBytes = buffer->fillCount;
     return (void*)((char*)buffer->buffer + buffer->tail);
 }
 
-inline void TPCircularBufferConsume(TPCircularBuffer *buffer, int32_t amount) {
+void TPCircularBufferConsume(TPCircularBuffer *buffer, int32_t amount) {
     buffer->tail = (buffer->tail + amount) % buffer->length;
     OSAtomicAdd32(-amount, &buffer->fillCount);
 }
 
-inline void* TPCircularBufferHead(TPCircularBuffer *buffer, int32_t* availableBytes) {
+void* TPCircularBufferHead(TPCircularBuffer *buffer, int32_t* availableBytes) {
     *availableBytes = (buffer->length - buffer->fillCount);
     return (void*)((char*)buffer->buffer + buffer->head);
 }
 
-inline void TPCircularBufferProduce(TPCircularBuffer *buffer, int amount) {
+void TPCircularBufferProduce(TPCircularBuffer *buffer, int amount) {
     buffer->head = (buffer->head + amount) % buffer->length;
     OSAtomicAdd32(amount, &buffer->fillCount);
 }
