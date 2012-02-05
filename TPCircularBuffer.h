@@ -35,6 +35,10 @@
 
 #include <libkern/OSAtomic.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+    
 typedef struct {
     void             *buffer;
     int32_t           length;
@@ -55,3 +59,7 @@ void  TPCircularBufferConsume(TPCircularBuffer *buffer, int32_t amount);
 void* TPCircularBufferHead(TPCircularBuffer *buffer, int32_t* availableBytes);
 void  TPCircularBufferProduce(TPCircularBuffer *buffer, int32_t amount);
 int   TPCircularBufferProduceBytes(TPCircularBuffer *buffer, const void* src, int32_t len);
+
+#ifdef __cplusplus
+}
+#endif
