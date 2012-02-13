@@ -95,27 +95,27 @@ void TPCircularBufferClear(TPCircularBuffer *buffer) {
     buffer->fillCount = 0;
 }
 
-void* TPCircularBufferTail(TPCircularBuffer *buffer, int32_t* availableBytes) {
+inline void* TPCircularBufferTail(TPCircularBuffer *buffer, int32_t* availableBytes) {
     *availableBytes = buffer->fillCount;
     return (void*)((char*)buffer->buffer + buffer->tail);
 }
 
-void TPCircularBufferConsume(TPCircularBuffer *buffer, int32_t amount) {
+inline void TPCircularBufferConsume(TPCircularBuffer *buffer, int32_t amount) {
     buffer->tail = (buffer->tail + amount) % buffer->length;
     OSAtomicAdd32Barrier(-amount, &buffer->fillCount);
 }
 
-void* TPCircularBufferHead(TPCircularBuffer *buffer, int32_t* availableBytes) {
+inline void* TPCircularBufferHead(TPCircularBuffer *buffer, int32_t* availableBytes) {
     *availableBytes = (buffer->length - buffer->fillCount);
     return (void*)((char*)buffer->buffer + buffer->head);
 }
 
-void TPCircularBufferProduce(TPCircularBuffer *buffer, int amount) {
+inline void TPCircularBufferProduce(TPCircularBuffer *buffer, int amount) {
     buffer->head = (buffer->head + amount) % buffer->length;
     OSAtomicAdd32Barrier(amount, &buffer->fillCount);
 }
 
-int TPCircularBufferProduceBytes(TPCircularBuffer *buffer, const void* src, int32_t len) {
+inline int TPCircularBufferProduceBytes(TPCircularBuffer *buffer, const void* src, int32_t len) {
     int32_t space;
     void *ptr = TPCircularBufferHead(buffer, &space);
     int copied = min(len, space);
