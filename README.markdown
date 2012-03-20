@@ -14,6 +14,10 @@ Producing: Use `TPCircularBufferHead` to get a pointer to write to the buffer, f
 
 Consuming: Use `TPCircularBufferTail` to get a pointer to the next data to read, followed by `TPCircularBufferConsume` to free up the space once processed.
 
+TPCircularBuffer+AudioBufferList.(c,h) contain helper functions to queue and dequeue AudioBufferList
+structures. These will automatically adjust the mData fields of each buffer to point to 16-byte aligned
+regions within the circular buffer.
+
 Thread safety
 -------------
 
