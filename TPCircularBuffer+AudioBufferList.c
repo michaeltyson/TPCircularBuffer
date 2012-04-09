@@ -14,7 +14,7 @@ int TPCircularBufferProduceAudioBufferList(TPCircularBuffer *buffer, const Audio
     
     int bufferListSize = sizeof(AudioBufferList) + ((bufferList->mNumberBuffers-1) * sizeof(AudioBuffer));
     
-    if ( availableBytes < bufferListSize ) return 0;
+    if ( availableBytes < bufferListSize ) return NO;
     memcpy(list, bufferList, bufferListSize);
     
     char *dataPtr = (char*)list + bufferListSize;
@@ -25,7 +25,7 @@ int TPCircularBufferProduceAudioBufferList(TPCircularBuffer *buffer, const Audio
         }
         
         if ( (dataPtr + bufferList->mBuffers[i].mDataByteSize) - (char*)list > availableBytes ) {
-            return 0;
+            return NO;
         }
         
         list->mBuffers[i].mData = dataPtr;
@@ -35,6 +35,6 @@ int TPCircularBufferProduceAudioBufferList(TPCircularBuffer *buffer, const Audio
     
     TPCircularBufferProduce(buffer, dataPtr-(char*)list);
     
-    return dataPtr-(char*)list;
+    return YES;
 }
 
