@@ -20,9 +20,12 @@ static inline bool _checkResult(kern_return_t result, const char *operation, con
 }
 
 bool TPCircularBufferInit(TPCircularBuffer *buffer, int length) {
-    // keep trying tuntil we get our buffer, needed to handle race conditions
-    while(1) {
+
+    // Keep trying until we get our buffer, needed to handle race conditions
+    while( 1 ) {
+
         buffer->length = round_page(length);    // We need whole page sizes
+
         // Temporarily allocate twice the length, so we have the contiguous address space to
         // support a second instance of the buffer directly after
         vm_address_t bufferAddress;
@@ -31,7 +34,7 @@ bool TPCircularBufferInit(TPCircularBuffer *buffer, int length) {
                                       buffer->length * 2,
                                       VM_FLAGS_ANYWHERE), // allocate anywhere it'll fit
                           "Buffer allocation") ) {
-            // try again if we fail
+            // Try again if we fail
             continue;
         }
         
@@ -40,7 +43,7 @@ bool TPCircularBufferInit(TPCircularBuffer *buffer, int length) {
                                         bufferAddress + buffer->length,
                                         buffer->length),
                           "Buffer deallocation") ) {
-            // if this fails somehow, deallocate the whole region and try again
+            // If this fails somehow, deallocate the whole region and try again
             vm_deallocate(mach_task_self(), bufferAddress, buffer->length);
             continue;
         }
@@ -48,24 +51,25 @@ bool TPCircularBufferInit(TPCircularBuffer *buffer, int length) {
         // Re-map the buffer to the address space immediately after the buffer
         vm_address_t virtualAddress = bufferAddress + buffer->length;
         vm_prot_t cur_prot, max_prot;
-        if(!checkResult(vm_remap(mach_task_self(),
-                                 &virtualAddress, // mirror target
-                                 buffer->length, // size of mirror
-                                 0, // auto alignment
-                                 0, // force remapping to virtualAddress
-                                 mach_task_self(), // same task
-                                 bufferAddress, // mirror source
-                                 0, // MAP READ-WRITE, NOT COPY
-                                 &cur_prot, // unused protection struct
-                                 &max_prot, // unused protection struct
-                                 VM_INHERIT_DEFAULT), "Remap buffer memory")) {
-            // if this remap failed, we hit a race condition, so deallocate and try again
+        if ( !checkResult(vm_remap(mach_task_self(),
+                                 &virtualAddress,   // mirror target
+                                 buffer->length,    // size of mirror
+                                 0,                 // auto alignment
+                                 0,                 // force remapping to virtualAddress
+                                 mach_task_self(),  // same task
+                                 bufferAddress,     // mirror source
+                                 0,                 // MAP READ-WRITE, NOT COPY
+                                 &cur_prot,         // unused protection struct
+                                 &max_prot,         // unused protection struct
+                                 VM_INHERIT_DEFAULT), 
+                         "Remap buffer memory") ) {
+            // If this remap failed, we hit a race condition, so deallocate and try again
             vm_deallocate(mach_task_self(), bufferAddress, buffer->length);
             continue;
         }
         
         if ( virtualAddress != bufferAddress+buffer->length ) {
-            // if the memory is not contiguous, clean up both allocated buffers and try again
+            // If the memory is not contiguous, clean up both allocated buffers and try again
             printf("Couldn't map buffer memory to end of buffer\n");
             vm_deallocate(mach_task_self(), virtualAddress, buffer->length);
             vm_deallocate(mach_task_self(), bufferAddress, buffer->length);
