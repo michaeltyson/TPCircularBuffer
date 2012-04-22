@@ -66,10 +66,19 @@ static __inline__ __attribute__((always_inline)) AudioBufferList *TPCircularBuff
 }
 
 /*!
+ * Get a pointer to the next stored buffer list after the given one
+ *
+ * @param buffer            Circular buffer
+ * @param bufferList        Preceding buffer list
+ * @param outTimestamp      On output, if not NULL, the timestamp corresponding to the buffer
+ * @return Pointer to the next buffer list in the buffer, or NULL
+ */
+AudioBufferList *TPCircularBufferNextBufferListAfter(TPCircularBuffer *buffer, AudioBufferList *bufferList, AudioTimeStamp *outTimestamp);
+
+/*!
  * Consume the next buffer list
  *
  * @param buffer Circular buffer
- * @param bufferList The buffer list to consume (must be the most recent value from TPCircularBufferNextBufferList)
  */
 static __inline__ __attribute__((always_inline)) void TPCircularBufferConsumeNextBufferList(TPCircularBuffer *buffer) {
     int32_t dontcare;
@@ -78,6 +87,18 @@ static __inline__ __attribute__((always_inline)) void TPCircularBufferConsumeNex
     UInt32 *totalLengthInBytes = (UInt32*)(timestamp+1);
     TPCircularBufferConsume(buffer, sizeof(AudioTimeStamp)+sizeof(UInt32)+*totalLengthInBytes);
 }
+
+/*!
+ * Consume a portion of the next buffer list
+ *
+ *  This will also increment the sample time and host time portions of the timestamp of
+ *  the buffer list, if present.
+ *
+ * @param buffer Circular buffer
+ * @param framesToConsume The number of frames to consume from the buffer list
+ * @param audioFormat The AudioStreamBasicDescription describing the audio
+ */
+void TPCircularBufferConsumeNextBufferListPartial(TPCircularBuffer *buffer, int framesToConsume, AudioStreamBasicDescription *audioFormat);
 
 /*!
  * Consume a certain number of frames from the buffer, possibly from multiple queued buffer lists
