@@ -150,6 +150,8 @@ AudioBufferList *TPCircularBufferNextBufferListAfter(TPCircularBuffer *buffer, A
 }
 
 void TPCircularBufferConsumeNextBufferListPartial(TPCircularBuffer *buffer, int framesToConsume, AudioStreamBasicDescription *audioFormat) {
+    assert(framesToConsume >= 0);
+    
     int32_t dontcare;
     AudioTimeStamp *timestamp = TPCircularBufferTail(buffer, &dontcare);
     if ( !timestamp ) return;
@@ -165,6 +167,7 @@ void TPCircularBufferConsumeNextBufferListPartial(TPCircularBuffer *buffer, int 
     
     for ( int i=0; i<bufferList->mNumberBuffers; i++ ) {
         bufferList->mBuffers[i].mData = (char*)bufferList->mBuffers[i].mData + bytesToConsume;
+        assert(bytesToConsume <= bufferList->mBuffers[i].mDataByteSize);
         bufferList->mBuffers[i].mDataByteSize -= bytesToConsume;
     }
     
