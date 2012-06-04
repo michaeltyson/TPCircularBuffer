@@ -39,29 +39,17 @@ AudioBufferList *TPCircularBufferPrepareEmptyAudioBufferList(TPCircularBuffer *b
 void TPCircularBufferProduceAudioBufferList(TPCircularBuffer *buffer);
 
 /*!
- * Copy the audio buffer list onto the buffer, with a frame count limit
- *
- * @param buffer            Circular buffer
- * @param bufferList        Buffer list containing audio to copy to buffer
- * @param timestamp         The timestamp associated with the buffer, or NULL
- * @param frames            Number of frames of original buffer to copy
- * @param audioFormat The AudioStreamBasicDescription describing the audio
- * @return YES if buffer list was successfully copied; NO if there was insufficient space
- */
-bool TPCircularBufferCopyAudioBufferListPartial(TPCircularBuffer *buffer, const AudioBufferList *bufferList, const AudioTimeStamp *timestamp, UInt32 frames, AudioStreamBasicDescription *audioFormat);
-
-/*!
  * Copy the audio buffer list onto the buffer
  *
  * @param buffer            Circular buffer
  * @param bufferList        Buffer list containing audio to copy to buffer
  * @param timestamp         The timestamp associated with the buffer, or NULL
+ * @param frames            Length of audio in frames. Specify UINT32_MAX to copy the whole buffer (audioFormat can be NULL, in this case)
+ * @param audioFormat       The AudioStreamBasicDescription describing the audio, or NULL if you specify UINT32_MAX to the `frames` argument
  * @return YES if buffer list was successfully copied; NO if there was insufficient space
  */
-static __inline__ __attribute__((always_inline)) bool TPCircularBufferCopyAudioBufferList(TPCircularBuffer *buffer, const AudioBufferList *bufferList, const AudioTimeStamp *timestamp) {
-    return TPCircularBufferCopyAudioBufferListPartial(buffer, bufferList, timestamp, UINT32_MAX, NULL);
-}
-    
+bool TPCircularBufferCopyAudioBufferList(TPCircularBuffer *buffer, const AudioBufferList *bufferList, const AudioTimeStamp *timestamp, UInt32 frames, AudioStreamBasicDescription *audioFormat);
+
 /*!
  * Get a pointer to the next stored buffer list
  *
