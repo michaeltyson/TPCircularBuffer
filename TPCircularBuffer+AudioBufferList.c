@@ -104,7 +104,8 @@ bool TPCircularBufferCopyAudioBufferList(TPCircularBuffer *buffer, const AudioBu
     
     int byteCount = bufferList->mBuffers[0].mDataByteSize;
     if ( frames != UINT32_MAX ) {
-        byteCount = min(byteCount, frames * audioDescription->mBytesPerFrame);
+        byteCount = frames * audioDescription->mBytesPerFrame;
+        assert(byteCount <= bufferList->mBuffers[0].mDataByteSize);
     }
     
     char *dataPtr = (char*)list + bufferListSize;
@@ -119,7 +120,10 @@ bool TPCircularBufferCopyAudioBufferList(TPCircularBuffer *buffer, const AudioBu
         assert(bufferList->mBuffers[i].mData != NULL);
         
         list->mBuffers[i].mData = dataPtr;
+        list->mBuffers[i].mDataByteSize = byteCount;
+        
         memcpy(dataPtr, bufferList->mBuffers[i].mData, byteCount);
+        
         dataPtr += byteCount;
     }
     
