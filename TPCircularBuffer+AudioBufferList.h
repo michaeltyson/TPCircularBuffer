@@ -129,6 +129,19 @@ void TPCircularBufferDequeueBufferListFrames(TPCircularBuffer *buffer, UInt32 *i
  * @return The number of frames in the given audio format that are in the buffer
  */
 UInt32 TPCircularBufferPeek(TPCircularBuffer *buffer, AudioTimeStamp *outTimestamp, AudioStreamBasicDescription *audioFormat);
+
+/*!
+ * Determine how many contiguous frames of audio are buffered
+ *
+ *  Given the provided audio format, determines the frame count of all queued buffers that are contiguous,
+ *  given their corresponding timestamps (sample time).
+ *
+ * @param buffer            Circular buffer
+ * @param outTimestamp      On output, if not NULL, the timestamp corresponding to the first audio frame returned
+ * @param audioFormat       The format of the audio stored in the buffer
+ * @return The number of frames in the given audio format that are in the buffer
+ */
+UInt32 TPCircularBufferPeekContiguous(TPCircularBuffer *buffer, AudioTimeStamp *outTimestamp, AudioStreamBasicDescription *audioFormat);
  
 #ifdef __cplusplus
 }
