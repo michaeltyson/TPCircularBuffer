@@ -91,7 +91,7 @@ bool TPCircularBufferCopyAudioBufferList(TPCircularBuffer *buffer, const AudioBu
     
     // Store timestamp, followed by buffer list
     if ( inTimestamp ) {
-        *timestamp = *inTimestamp;
+        memcpy(timestamp, inTimestamp, sizeof(AudioTimeStamp));
     } else {
         memset(timestamp, 0, sizeof(AudioTimeStamp));
     }
@@ -222,7 +222,7 @@ static UInt32 _TPCircularBufferPeek(TPCircularBuffer *buffer, AudioTimeStamp *ou
     int32_t availableBytes;
     AudioTimeStamp *timestamp = TPCircularBufferTail(buffer, &availableBytes);
     if ( timestamp && outTimestamp ) {
-        *outTimestamp = *timestamp;
+        memcpy(outTimestamp, timestamp, sizeof(AudioTimeStamp));
     }
     
     if ( !timestamp ) return 0;
