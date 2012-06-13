@@ -72,7 +72,7 @@ void TPCircularBufferProduceAudioBufferList(TPCircularBuffer *buffer) {
 
     AudioBufferList *list = (AudioBufferList*)(totalLengthInBytes+1);
     UInt32 calculatedLength = ((char*)list->mBuffers[list->mNumberBuffers-1].mData + list->mBuffers[list->mNumberBuffers-1].mDataByteSize) - (char*)list;
-    assert(calculatedLength < *totalLengthInBytes && sizeof(AudioTimeStamp)+sizeof(UInt32)+calculatedLength <= availableBytes);
+    assert(calculatedLength <= *totalLengthInBytes && sizeof(AudioTimeStamp)+sizeof(UInt32)+calculatedLength <= availableBytes);
     
     *totalLengthInBytes = calculatedLength;
     
