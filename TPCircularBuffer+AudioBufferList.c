@@ -186,7 +186,8 @@ void TPCircularBufferConsumeNextBufferListPartial(TPCircularBuffer *buffer, int 
             mach_timebase_info(&tinfo);
             __secondsToHostTicks = 1.0 / (((double)tinfo.numer / tinfo.denom) * 1.0e-9);
         }
-        timestamp->mHostTime += ((double)framesToConsume / audioFormat->mSampleRate) * __secondsToHostTicks;
+        uint64_t lengthInTicks = ((double)framesToConsume / audioFormat->mSampleRate) * __secondsToHostTicks;
+        timestamp->mHostTime = timestamp->mHostTime + lengthInTicks;
     }
 }
 
