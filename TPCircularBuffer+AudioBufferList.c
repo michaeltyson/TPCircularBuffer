@@ -192,7 +192,7 @@ void TPCircularBufferDequeueBufferListFrames(TPCircularBuffer *buffer, UInt32 *i
     *ioLengthInFrames -= bytesToGo / audioFormat->mBytesPerFrame;
 }
 
-static UInt32 _TPCircularBufferPeek(TPCircularBuffer *buffer, AudioTimeStamp *outTimestamp, AudioStreamBasicDescription *audioFormat, bool contiguous) {
+static UInt32 _TPCircularBufferPeek(TPCircularBuffer *buffer, AudioTimeStamp *outTimestamp, AudioStreamBasicDescription *audioFormat, UInt32 contiguousToleranceSampleTime) {
     int32_t availableBytes;
     TPCircularBufferABLBlockHeader *block = (TPCircularBufferABLBlockHeader*)TPCircularBufferTail(buffer, &availableBytes);
     if ( !block ) return 0;
@@ -209,7 +209,9 @@ static UInt32 _TPCircularBufferPeek(TPCircularBuffer *buffer, AudioTimeStamp *ou
     while ( 1 ) {
         byteCount += block->bufferList.mBuffers[0].mDataByteSize;
         TPCircularBufferABLBlockHeader *nextBlock = (TPCircularBufferABLBlockHeader*)((char*)block + block->totalLength);
-        if ( (void*)nextBlock >= end || (contiguous && nextBlock->timestamp.mSampleTime != block->timestamp.mSampleTime + (block->bufferList.mBuffers[0].mDataByteSize / audioFormat->mBytesPerFrame)) ) {
+        if ( (void*)nextBlock >= end ||
+                (contiguousToleranceSampleTime != UINT32_MAX
+                    && labs(nextBlock->timestamp.mSampleTime - (block->timestamp.mSampleTime + (block->bufferList.mBuffers[0].mDataByteSize / audioFormat->mBytesPerFrame))) > contiguousToleranceSampleTime) ) {
             break;
         }
         assert(!((unsigned long)nextBlock & 0xF) /* Beware unaligned accesses */);
@@ -220,9 +222,9 @@ static UInt32 _TPCircularBufferPeek(TPCircularBuffer *buffer, AudioTimeStamp *ou
 }
 
 UInt32 TPCircularBufferPeek(TPCircularBuffer *buffer, AudioTimeStamp *outTimestamp, AudioStreamBasicDescription *audioFormat) {
-    return _TPCircularBufferPeek(buffer, outTimestamp, audioFormat, false);
+    return _TPCircularBufferPeek(buffer, outTimestamp, audioFormat, UINT32_MAX);
 }
 
-UInt32 TPCircularBufferPeekContiguous(TPCircularBuffer *buffer, AudioTimeStamp *outTimestamp, AudioStreamBasicDescription *audioFormat) {
-    return _TPCircularBufferPeek(buffer, outTimestamp, audioFormat, true);
+UInt32 TPCircularBufferPeekContiguous(TPCircularBuffer *buffer, AudioTimeStamp *outTimestamp, AudioStreamBasicDescription *audioFormat, UInt32 contiguousToleranceSampleTime) {
+    return _TPCircularBufferPeek(buffer, outTimestamp, audioFormat, contiguousToleranceSampleTime);
 }
