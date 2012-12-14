@@ -86,7 +86,8 @@ void TPCircularBufferProduceAudioBufferList(TPCircularBuffer *buffer, const Audi
 }
 
 bool TPCircularBufferCopyAudioBufferList(TPCircularBuffer *buffer, const AudioBufferList *inBufferList, const AudioTimeStamp *inTimestamp, UInt32 frames, AudioStreamBasicDescription *audioDescription) {
-
+    if ( frames == 0 ) return true;
+    
     int byteCount = inBufferList->mBuffers[0].mDataByteSize;
     if ( frames != kTPCircularBufferCopyAll ) {
         byteCount = frames * audioDescription->mBytesPerFrame;
