@@ -135,7 +135,7 @@ void TPCircularBufferConsumeNextBufferListPartial(TPCircularBuffer *buffer, int 
     if ( !block ) return;
     assert(!((unsigned long)block & 0xF)); // Beware unaligned accesses
     
-    int bytesToConsume = framesToConsume * audioFormat->mBytesPerFrame;
+    int bytesToConsume = min(framesToConsume * audioFormat->mBytesPerFrame, block->bufferList.mBuffers[0].mDataByteSize);
     
     if ( bytesToConsume == block->bufferList.mBuffers[0].mDataByteSize ) {
         TPCircularBufferConsumeNextBufferList(buffer);
