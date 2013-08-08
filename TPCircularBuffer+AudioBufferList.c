@@ -214,12 +214,6 @@ void TPCircularBufferDequeueBufferListFrames(TPCircularBuffer *buffer, UInt32 *i
     }
     
     *ioLengthInFrames -= bytesToGo / audioFormat->mBytesPerFrame;
-    
-    if ( outputBufferList ) {
-        for ( int i=0; i<outputBufferList->mNumberBuffers; i++ ) {
-            outputBufferList->mBuffers[i].mDataByteSize = *ioLengthInFrames * audioFormat->mBytesPerFrame;
-        }
-    }
 }
 
 static UInt32 _TPCircularBufferPeek(TPCircularBuffer *buffer, AudioTimeStamp *outTimestamp, const AudioStreamBasicDescription *audioFormat, UInt32 contiguousToleranceSampleTime) {
