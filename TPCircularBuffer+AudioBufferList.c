@@ -117,6 +117,8 @@ bool TPCircularBufferCopyAudioBufferList(TPCircularBuffer *buffer, const AudioBu
         assert(byteCount <= inBufferList->mBuffers[0].mDataByteSize);
     }
     
+    if ( byteCount == 0 ) return true;
+    
     AudioBufferList *bufferList = TPCircularBufferPrepareEmptyAudioBufferList(buffer, inBufferList->mNumberBuffers, byteCount, inTimestamp);
     if ( !bufferList ) return false;
     
