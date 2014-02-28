@@ -186,6 +186,13 @@ void TPCircularBufferConsumeNextBufferListPartial(TPCircularBuffer *buffer, int 
 
         block->timestamp.mHostTime += ((double)framesToConsume / audioFormat->mSampleRate) * __secondsToHostTicks;
     }
+    
+    // Reposition block forward, just before the audio data, ensuring 16-byte alignment
+    TPCircularBufferABLBlockHeader *newBlock = (TPCircularBufferABLBlockHeader*)(((unsigned long)block + bytesToConsume) & ~0xFul);
+    memmove(newBlock, block, sizeof(TPCircularBufferABLBlockHeader) + (block->bufferList.mNumberBuffers-1)*sizeof(AudioBuffer));
+    int32_t bytesFreed = (char*)newBlock - (char*)block;
+    newBlock->totalLength -= bytesFreed;
+    TPCircularBufferConsume(buffer, bytesFreed);
 }
 
 void TPCircularBufferDequeueBufferListFrames(TPCircularBuffer *buffer, UInt32 *ioLengthInFrames, AudioBufferList *outputBufferList, AudioTimeStamp *outTimestamp, const AudioStreamBasicDescription *audioFormat) {
