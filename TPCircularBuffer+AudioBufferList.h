@@ -58,6 +58,17 @@ typedef struct {
 AudioBufferList *TPCircularBufferPrepareEmptyAudioBufferList(TPCircularBuffer *buffer, int numberOfBuffers, int bytesPerBuffer, const AudioTimeStamp *timestamp);
 
 /*!
+ * Prepare an empty buffer list, stored on the circular buffer, using an audio description to automatically configure buffer
+ *
+ * @param buffer            Circular buffer
+ * @param audioFormat       The kind of audio that will be stored
+ * @param frameCount        The number of frames that will be stored
+ * @param timestamp         The timestamp associated with the buffer, or NULL. Note that you can also pass a timestamp into TPCircularBufferProduceAudioBufferList, to set it there instead.
+ * @return The empty buffer list, or NULL if circular buffer has insufficient space
+ */
+AudioBufferList *TPCircularBufferPrepareEmptyAudioBufferListWithAudioFormat(TPCircularBuffer *buffer, AudioStreamBasicDescription *audioFormat, UInt32 frameCount, const AudioTimeStamp *timestamp);
+
+/*!
  * Mark next audio buffer list as ready for reading
  *
  *  This marks the audio buffer list prepared using TPCircularBufferPrepareEmptyAudioBufferList
