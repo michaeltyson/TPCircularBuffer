@@ -197,7 +197,7 @@ void TPCircularBufferConsumeNextBufferListPartial(TPCircularBuffer *buffer, int 
     // Reposition block forward, just before the audio data, ensuring 16-byte alignment
     TPCircularBufferABLBlockHeader *newBlock = (TPCircularBufferABLBlockHeader*)(((unsigned long)block + bytesToConsume) & ~0xFul);
     memmove(newBlock, block, sizeof(TPCircularBufferABLBlockHeader) + (block->bufferList.mNumberBuffers-1)*sizeof(AudioBuffer));
-    int32_t bytesFreed = (char*)newBlock - (char*)block;
+    int32_t bytesFreed = (int32_t)newBlock - (int32_t)block;
     newBlock->totalLength -= bytesFreed;
     TPCircularBufferConsume(buffer, bytesFreed);
 }

@@ -211,7 +211,7 @@ static __inline__ __attribute__((always_inline)) UInt32 TPCircularBufferGetAvail
     size_t blockSize = sizeof(TPCircularBufferABLBlockHeader)
                             + (sizeof(AudioBuffer) * (audioFormat->mFormatFlags & kAudioFormatFlagIsNonInterleaved ? audioFormat->mChannelsPerFrame-1 : 0));
     if ( availableBytes <= blockSize ) return 0;
-    return (availableBytes-blockSize) / (audioFormat->mBytesPerFrame * (audioFormat->mFormatFlags & kAudioFormatFlagIsNonInterleaved ? audioFormat->mChannelsPerFrame : 1));
+    return (UInt32)(availableBytes-blockSize) / (audioFormat->mBytesPerFrame * (audioFormat->mFormatFlags & kAudioFormatFlagIsNonInterleaved ? audioFormat->mChannelsPerFrame : 1));
 }
     
 #ifdef __cplusplus
