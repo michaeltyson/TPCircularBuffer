@@ -66,7 +66,7 @@ AudioBufferList *TPCircularBufferPrepareEmptyAudioBufferList(TPCircularBuffer *b
  * @param timestamp         The timestamp associated with the buffer, or NULL. Note that you can also pass a timestamp into TPCircularBufferProduceAudioBufferList, to set it there instead.
  * @return The empty buffer list, or NULL if circular buffer has insufficient space
  */
-AudioBufferList *TPCircularBufferPrepareEmptyAudioBufferListWithAudioFormat(TPCircularBuffer *buffer, AudioStreamBasicDescription *audioFormat, UInt32 frameCount, const AudioTimeStamp *timestamp);
+AudioBufferList *TPCircularBufferPrepareEmptyAudioBufferListWithAudioFormat(TPCircularBuffer *buffer, const AudioStreamBasicDescription *audioFormat, UInt32 frameCount, const AudioTimeStamp *timestamp);
 
 /*!
  * Mark next audio buffer list as ready for reading
