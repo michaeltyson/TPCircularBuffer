@@ -101,7 +101,7 @@ bool TPCircularBufferCopyAudioBufferList(TPCircularBuffer *buffer, const AudioBu
  */
 static __inline__ __attribute__((always_inline)) AudioBufferList *TPCircularBufferNextBufferList(TPCircularBuffer *buffer, AudioTimeStamp *outTimestamp) {
     int32_t dontcare; // Length of segment is contained within buffer list, so we can ignore this
-    TPCircularBufferABLBlockHeader *block = TPCircularBufferTail(buffer, &dontcare);
+    TPCircularBufferABLBlockHeader *block = (TPCircularBufferABLBlockHeader*)TPCircularBufferTail(buffer, &dontcare);
     if ( !block ) {
         if ( outTimestamp ) {
             memset(outTimestamp, 0, sizeof(AudioTimeStamp));
@@ -131,7 +131,7 @@ AudioBufferList *TPCircularBufferNextBufferListAfter(TPCircularBuffer *buffer, A
  */
 static __inline__ __attribute__((always_inline)) void TPCircularBufferConsumeNextBufferList(TPCircularBuffer *buffer) {
     int32_t dontcare;
-    TPCircularBufferABLBlockHeader *block = TPCircularBufferTail(buffer, &dontcare);
+    TPCircularBufferABLBlockHeader *block = (TPCircularBufferABLBlockHeader*)TPCircularBufferTail(buffer, &dontcare);
     if ( !block ) return;
     TPCircularBufferConsume(buffer, block->totalLength);
 }
