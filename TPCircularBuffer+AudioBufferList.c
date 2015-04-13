@@ -248,7 +248,7 @@ static UInt32 _TPCircularBufferPeek(TPCircularBuffer *buffer, AudioTimeStamp *ou
         TPCircularBufferABLBlockHeader *nextBlock = (TPCircularBufferABLBlockHeader*)((char*)block + block->totalLength);
         if ( (void*)nextBlock >= end ||
                 (contiguousToleranceSampleTime != UINT32_MAX
-                    && labs(nextBlock->timestamp.mSampleTime - (block->timestamp.mSampleTime + (block->bufferList.mBuffers[0].mDataByteSize / audioFormat->mBytesPerFrame))) > contiguousToleranceSampleTime) ) {
+                    && fabs(nextBlock->timestamp.mSampleTime - (block->timestamp.mSampleTime + (block->bufferList.mBuffers[0].mDataByteSize / audioFormat->mBytesPerFrame))) > contiguousToleranceSampleTime) ) {
             break;
         }
         assert(!((unsigned long)nextBlock & 0xF) /* Beware unaligned accesses */);
