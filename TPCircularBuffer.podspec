@@ -14,6 +14,6 @@ Pod::Spec.new do |s|
   s.source             = { :git => 'https://github.com/michaeltyson/TPCircularBuffer.git', :tag => '1.3' }
   s.source_files       = '*.{c,h}'
   s.requires_arc       = false
-  s.ios.frameworks     = %w{AudioToolbox}
-  s.osx.frameworks     = %w{AudioToolbox}
+  s.frameworks         = 'AudioToolbox'
+  s.platform           = :ios, '4.3', :osx, '10.0'
 end
