@@ -99,6 +99,8 @@ void TPCircularBufferProduceAudioBufferList(TPCircularBuffer *buffer, const Audi
     
     assert(!((unsigned long)block & 0xF) /* Beware unaligned accesses */);
     
+    assert(block->bufferList.mBuffers[0].mDataByteSize > 0);
+    
     if ( inTimestamp ) {
         memcpy(&block->timestamp, inTimestamp, sizeof(AudioTimeStamp));
     }
