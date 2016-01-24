@@ -15,5 +15,5 @@ Pod::Spec.new do |s|
   s.source_files       = '*.{c,h}'
   s.requires_arc       = false
   s.frameworks         = 'AudioToolbox'
-  s.platform           = :ios, '4.3', :osx, '10.0'
+  s.platform           = { :ios, '4.3', :osx, '10.0' }
 end
