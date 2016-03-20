@@ -66,6 +66,13 @@ typedef struct {
  *  memory mirroring technique works, the true buffer length will
  *  be multiples of the device page size (e.g. 4096 bytes)
  *
+ *  If you intend to use the AudioBufferList utilities, you should
+ *  always allocate a bit more space than you need for pure audio
+ *  data, so there's room for the metadata. How much extra is required
+ *  depends on how many AudioBufferList structures are used, which is
+ *  a function of how many audio frames each buffer holds. A good rule
+ *  of thumb is to add 5%, or at least another 1024 bytes or so.
+ *
  * @param buffer Circular buffer
  * @param length Length of buffer
  */
