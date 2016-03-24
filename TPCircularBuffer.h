@@ -71,7 +71,7 @@ typedef struct {
  *  data, so there's room for the metadata. How much extra is required
  *  depends on how many AudioBufferList structures are used, which is
  *  a function of how many audio frames each buffer holds. A good rule
- *  of thumb is to add 5%, or at least another 1024 bytes or so.
+ *  of thumb is to add 15%, or at least another 2048 bytes or so.
  *
  * @param buffer Circular buffer
  * @param length Length of buffer
