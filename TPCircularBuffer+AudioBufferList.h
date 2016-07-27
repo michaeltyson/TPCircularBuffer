@@ -76,7 +76,7 @@ AudioBufferList *TPCircularBufferPrepareEmptyAudioBufferListWithAudioFormat(TPCi
  *  TPCircularBufferPrepareEmptyAudioBufferList.
  *
  * @param buffer            Circular buffer
- * @param timestamp         The timestamp associated with the buffer, or NULL to leave as-is. Note that you can also pass a timestamp into TPCircularBufferPrepareEmptyAudioBufferList, to set it there instead.
+ * @param inTimestamp       The timestamp associated with the buffer, or NULL to leave as-is. Note that you can also pass a timestamp into TPCircularBufferPrepareEmptyAudioBufferList, to set it there instead.
  */
 void TPCircularBufferProduceAudioBufferList(TPCircularBuffer *buffer, const AudioTimeStamp *inTimestamp);
 
