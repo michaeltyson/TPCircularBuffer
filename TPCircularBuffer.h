@@ -42,7 +42,8 @@
 #ifndef TPCircularBuffer_h
 #define TPCircularBuffer_h
 
-#include <libkern/OSAtomic.h>
+#include <stdbool.h>
+#include <stdatomic.h>
 #include <string.h>
 #include <assert.h>
 
@@ -55,7 +56,7 @@ typedef struct {
     int32_t           length;
     int32_t           tail;
     int32_t           head;
-    volatile int32_t  fillCount;
+    volatile atomic_int fillCount;
     bool              atomic;
 } TPCircularBuffer;
 
@@ -142,7 +143,7 @@ static __inline__ __attribute__((always_inline)) void* TPCircularBufferTail(TPCi
 static __inline__ __attribute__((always_inline)) void TPCircularBufferConsume(TPCircularBuffer *buffer, int32_t amount) {
     buffer->tail = (buffer->tail + amount) % buffer->length;
     if ( buffer->atomic ) {
-        OSAtomicAdd32Barrier(-amount, &buffer->fillCount);
+        atomic_fetch_add(&buffer->fillCount, -amount);
     } else {
         buffer->fillCount -= amount;
     }
@@ -178,7 +179,7 @@ static __inline__ __attribute__((always_inline)) void* TPCircularBufferHead(TPCi
 static __inline__ __attribute__((always_inline)) void TPCircularBufferProduce(TPCircularBuffer *buffer, int32_t amount) {
     buffer->head = (buffer->head + amount) % buffer->length;
     if ( buffer->atomic ) {
-        OSAtomicAdd32Barrier(amount, &buffer->fillCount);
+        atomic_fetch_add(&buffer->fillCount, amount);
     } else {
         buffer->fillCount += amount;
     }
