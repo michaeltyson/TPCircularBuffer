@@ -43,9 +43,17 @@
 #define TPCircularBuffer_h
 
 #include <stdbool.h>
-#include <stdatomic.h>
 #include <string.h>
 #include <assert.h>
+
+#ifdef __cplusplus
+    extern "C++" {
+        #include <atomic>
+        using namespace std;
+    }
+#else
+    #include <stdatomic.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
