@@ -49,10 +49,13 @@
 #ifdef __cplusplus
     extern "C++" {
         #include <atomic>
-        using namespace std;
+        typedef std::atomic_int atomicInt;
+        #define atomicFetchAdd(a,b) std::atomic_fetch_add(a,b)
     }
 #else
     #include <stdatomic.h>
+    typedef atomic_int atomicInt;
+    #define atomicFetchAdd(a,b) atomic_fetch_add(a,b)
 #endif
 
 #ifdef __cplusplus
@@ -64,7 +67,7 @@ typedef struct {
     int32_t           length;
     int32_t           tail;
     int32_t           head;
-    volatile atomic_int fillCount;
+    volatile atomicInt fillCount;
     bool              atomic;
 } TPCircularBuffer;
 
@@ -151,7 +154,7 @@ static __inline__ __attribute__((always_inline)) void* TPCircularBufferTail(TPCi
 static __inline__ __attribute__((always_inline)) void TPCircularBufferConsume(TPCircularBuffer *buffer, int32_t amount) {
     buffer->tail = (buffer->tail + amount) % buffer->length;
     if ( buffer->atomic ) {
-        atomic_fetch_add(&buffer->fillCount, -amount);
+        atomicFetchAdd(&buffer->fillCount, -amount);
     } else {
         buffer->fillCount -= amount;
     }
@@ -187,7 +190,7 @@ static __inline__ __attribute__((always_inline)) void* TPCircularBufferHead(TPCi
 static __inline__ __attribute__((always_inline)) void TPCircularBufferProduce(TPCircularBuffer *buffer, int32_t amount) {
     buffer->head = (buffer->head + amount) % buffer->length;
     if ( buffer->atomic ) {
-        atomic_fetch_add(&buffer->fillCount, amount);
+        atomicFetchAdd(&buffer->fillCount, amount);
     } else {
         buffer->fillCount += amount;
     }
