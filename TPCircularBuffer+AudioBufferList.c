@@ -224,7 +224,7 @@ void TPCircularBufferDequeueBufferListFrames(TPCircularBuffer *buffer, UInt32 *i
         if ( !bufferList ) break;
         
         hasTimestamp = true;
-        unsigned long bytesToCopy = min(bytesToGo, bufferList->mBuffers[0].mDataByteSize);
+        UInt32 bytesToCopy = (UInt32)min(bytesToGo, bufferList->mBuffers[0].mDataByteSize);
         
         if ( outputBufferList ) {
             for ( UInt32 i=0; i<outputBufferList->mNumberBuffers; i++ ) {
