@@ -54,7 +54,7 @@ bool _TPCircularBufferInit(TPCircularBuffer *buffer, uint32_t length, size_t str
     int retries = 3;
     while ( true ) {
 
-        buffer->length = round_page(length);    // We need whole page sizes
+        buffer->length = (uint32_t)round_page(length);    // We need whole page sizes
 
         // Temporarily allocate twice the length, so we have the contiguous address space to
         // support a second instance of the buffer directly after
