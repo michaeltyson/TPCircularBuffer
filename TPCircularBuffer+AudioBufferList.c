@@ -198,7 +198,7 @@ void TPCircularBufferConsumeNextBufferListPartial(TPCircularBuffer *buffer, UInt
         block->timestamp.mSampleTime += framesToConsume;
     }
     if ( block->timestamp.mFlags & kAudioTimeStampHostTimeValid ) {
-        if ( !__secondsToHostTicks ) {
+        if ( __secondsToHostTicks == 0.0 ) {
             mach_timebase_info_data_t tinfo;
             mach_timebase_info(&tinfo);
             __secondsToHostTicks = 1.0 / (((double)tinfo.numer / tinfo.denom) * 1.0e-9);
