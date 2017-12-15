@@ -55,7 +55,7 @@ typedef struct {
  * @param timestamp         The timestamp associated with the buffer, or NULL. Note that you can also pass a timestamp into TPCircularBufferProduceAudioBufferList, to set it there instead.
  * @return The empty buffer list, or NULL if circular buffer has insufficient space
  */
-AudioBufferList *TPCircularBufferPrepareEmptyAudioBufferList(TPCircularBuffer *buffer, int numberOfBuffers, int bytesPerBuffer, const AudioTimeStamp *timestamp);
+AudioBufferList *TPCircularBufferPrepareEmptyAudioBufferList(TPCircularBuffer *buffer, UInt32 numberOfBuffers, UInt32 bytesPerBuffer, const AudioTimeStamp *timestamp);
 
 /*!
  * Prepare an empty buffer list, stored on the circular buffer, using an audio description to automatically configure buffer
@@ -100,7 +100,7 @@ bool TPCircularBufferCopyAudioBufferList(TPCircularBuffer *buffer, const AudioBu
  * @return Pointer to the next buffer list in the buffer
  */
 static __inline__ __attribute__((always_inline)) AudioBufferList *TPCircularBufferNextBufferList(TPCircularBuffer *buffer, AudioTimeStamp *outTimestamp) {
-    int32_t dontcare; // Length of segment is contained within buffer list, so we can ignore this
+    uint32_t dontcare; // Length of segment is contained within buffer list, so we can ignore this
     TPCircularBufferABLBlockHeader *block = (TPCircularBufferABLBlockHeader*)TPCircularBufferTail(buffer, &dontcare);
     if ( !block ) {
         if ( outTimestamp ) {
@@ -130,7 +130,7 @@ AudioBufferList *TPCircularBufferNextBufferListAfter(TPCircularBuffer *buffer, c
  * @param buffer Circular buffer
  */
 static __inline__ __attribute__((always_inline)) void TPCircularBufferConsumeNextBufferList(TPCircularBuffer *buffer) {
-    int32_t dontcare;
+    uint32_t dontcare;
     TPCircularBufferABLBlockHeader *block = (TPCircularBufferABLBlockHeader*)TPCircularBufferTail(buffer, &dontcare);
     if ( !block ) return;
     TPCircularBufferConsume(buffer, block->totalLength);
@@ -146,7 +146,7 @@ static __inline__ __attribute__((always_inline)) void TPCircularBufferConsumeNex
  * @param framesToConsume The number of frames to consume from the buffer list
  * @param audioFormat The AudioStreamBasicDescription describing the audio
  */
-void TPCircularBufferConsumeNextBufferListPartial(TPCircularBuffer *buffer, int framesToConsume, const AudioStreamBasicDescription *audioFormat);
+void TPCircularBufferConsumeNextBufferListPartial(TPCircularBuffer *buffer, UInt32 framesToConsume, const AudioStreamBasicDescription *audioFormat);
 
 /*!
  * Consume a certain number of frames from the buffer, possibly from multiple queued buffer lists
