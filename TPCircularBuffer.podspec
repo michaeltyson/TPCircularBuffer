@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.authors            = { 'Michael Tyson' => 'michael@atastypixel.com' }
   s.license            = { :type => 'MIT', :text => license }
   s.source             = { :git => 'https://github.com/michaeltyson/TPCircularBuffer.git', :tag => '1.6.1' }
-  s.source_files       = '*.{c,h}'
+  s.source_files       = 'Sources/**/*.{c,h}'
   s.requires_arc       = false
   s.frameworks         = 'AudioToolbox'
   s.ios.deployment_target = '4.3'
