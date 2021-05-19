@@ -204,7 +204,7 @@ void TPCircularBufferConsumeNextBufferListPartial(TPCircularBuffer *buffer, UInt
             __secondsToHostTicks = 1.0 / (((double)tinfo.numer / tinfo.denom) * 1.0e-9);
         }
 
-        block->timestamp.mHostTime += (UInt64)((double)framesToConsume / audioFormat->mSampleRate) * __secondsToHostTicks;
+        block->timestamp.mHostTime += (UInt64)(((double)framesToConsume / audioFormat->mSampleRate) * __secondsToHostTicks);
     }
     
     // Reposition block forward, just before the audio data, ensuring 16-byte alignment
