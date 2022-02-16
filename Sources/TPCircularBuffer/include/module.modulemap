@@ -1,0 +1,4 @@
+module TPCircularBuffer {
+	umbrella header "TPCircularBuffer+AudioBufferList.h"
+	export *
+}
