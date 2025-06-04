@@ -147,3 +147,7 @@ void TPCircularBufferClear(TPCircularBuffer *buffer) {
 void  TPCircularBufferSetAtomic(TPCircularBuffer *buffer, bool atomic) {
     buffer->atomic = atomic;
 }
+
+int TPCircularBufferFillCount(TPCircularBuffer *buffer) {
+	return buffer->fillCount;
+}

@@ -125,6 +125,17 @@ void  TPCircularBufferClear(TPCircularBuffer *buffer);
  */
 void  TPCircularBufferSetAtomic(TPCircularBuffer *buffer, bool atomic);
 
+/*!
+ * Access fillCount from Swift
+ *
+ *  Swift cannot access C atomic integers, so this function
+ *  will return the fillCount of the buffer, and can be called in Swift
+ *  provided that this header is imported in your Bridging Header
+ *
+ * @param buffer Circular buffer
+ */
+int  TPCircularBufferFillCount(TPCircularBuffer *buffer);
+
 // Reading (consuming)
 
 /*!
