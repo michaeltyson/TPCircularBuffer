@@ -49,13 +49,15 @@
 #ifdef __cplusplus
     extern "C++" {
         #include <atomic>
-        typedef std::atomic_int atomicInt;
+        typedef std::atomic_uint32_t atomicUInt32;
         #define atomicFetchAdd(a,b) std::atomic_fetch_add(a,b)
+        #define atomicFetchSub(a,b) std::atomic_fetch_sub(a,b)
     }
 #else
     #include <stdatomic.h>
-    typedef atomic_int atomicInt;
+    typedef atomic_uint_fast32_t atomicUInt32;
     #define atomicFetchAdd(a,b) atomic_fetch_add(a,b)
+    #define atomicFetchSub(a,b) atomic_fetch_sub(a,b)
 #endif
 
 #ifdef __cplusplus
@@ -63,12 +65,12 @@ extern "C" {
 #endif
     
 typedef struct {
-    void             *buffer;
-    uint32_t           length;
-    uint32_t           tail;
-    uint32_t           head;
-    volatile atomicInt fillCount;
-    bool              atomic;
+    void                 *buffer;
+    uint32_t              length;
+    uint32_t              tail;
+    uint32_t              head;
+    volatile atomicUInt32 fillCount;
+    bool                  atomic;
 } TPCircularBuffer;
 
 /*!
@@ -152,13 +154,13 @@ static __inline__ __attribute__((always_inline)) void* TPCircularBufferTail(TPCi
  * @param amount Number of bytes to consume
  */
 static __inline__ __attribute__((always_inline)) void TPCircularBufferConsume(TPCircularBuffer *buffer, uint32_t amount) {
+    assert(buffer->fillCount >= amount);
     buffer->tail = (buffer->tail + amount) % buffer->length;
     if ( buffer->atomic ) {
-        atomicFetchAdd(&buffer->fillCount, -(int)amount);
+        atomicFetchSub(&buffer->fillCount, amount);
     } else {
         buffer->fillCount -= amount;
     }
-    assert(buffer->fillCount >= 0);
 }
 
 /*!
@@ -190,7 +192,7 @@ static __inline__ __attribute__((always_inline)) void* TPCircularBufferHead(TPCi
 static __inline__ __attribute__((always_inline)) void TPCircularBufferProduce(TPCircularBuffer *buffer, uint32_t amount) {
     buffer->head = (buffer->head + amount) % buffer->length;
     if ( buffer->atomic ) {
-        atomicFetchAdd(&buffer->fillCount, (int)amount);
+        atomicFetchAdd(&buffer->fillCount, amount);
     } else {
         buffer->fillCount += amount;
     }
